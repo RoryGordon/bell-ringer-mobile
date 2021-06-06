@@ -9,6 +9,7 @@ class Model {
   double thetaDot = 0;
   double thetaDdot = 0;
   double predHeight = 0;
+  double torque = 0;
 
   double oldThetaSign = 1;
   double oldThetaDotSign = 1;
@@ -33,6 +34,14 @@ class Model {
   double _thetaDotSignChange() {
     // +ve if no change, -ve if change
     return oldThetaDotSign * thetaDot.sign;
+  }
+
+  double _torque() {
+    if (bigC != null) {
+      return 0.5 * thetaDdot - sin(theta);
+    } else {
+      return 0;
+    }
   }
 
   void setView(View view) {
@@ -81,13 +90,6 @@ class Model {
 
     if (vals.gX < 0) {
       _theta = pi - _theta;
-      // if (vals.gY < 0) {
-      //   // _theta -= pi;
-      //   _theta = pi - _theta;
-      // } else {
-      //   // _theta += pi;
-      //   _theta = -_theta + pi;
-      // }
     }
     return _theta - thetaOffset;
   }
@@ -119,13 +121,15 @@ class Model {
       } else {
         predHeight = null;
       }
+      torque = _torque();
       if (isCalibrating) {
         //TODO: Calibrate bigC
         if (_thetaDotSignChange() <= 0) {
           // at apex
-          // needs vals.aX to be genuine
           axisOffset = asin(vals.aY / vals.aMagnitude());
-          // axisOffset = atan(-vals.aX / vals.aY); // Needs testing
+          if (vals.aX < 0) {
+            axisOffset = pi - axisOffset;
+          }
           _cTMaxSum += cos(theta);
           _apexSamples++;
           _samples++;
@@ -141,7 +145,7 @@ class Model {
           // bigC = _bigC();
         }
       }
-      yield MeasuredVals(theta, thetaDot, thetaDdot, predHeight);
+      yield MeasuredVals(theta, thetaDot, thetaDdot, predHeight, torque);
     }
   }
 }
@@ -179,7 +183,8 @@ class MeasuredVals {
   final double thetaDot;
   final double thetaDdot;
   final double predHeight;
+  final double torque;
 
   const MeasuredVals(
-      this.theta, this.thetaDot, this.thetaDdot, this.predHeight);
+      this.theta, this.thetaDot, this.thetaDdot, this.predHeight, this.torque);
 }

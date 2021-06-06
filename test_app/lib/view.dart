@@ -157,7 +157,7 @@ class Painter extends CustomPainter {
     Offset center = Offset(size.width / 2, size.height / 2);
 
     Offset pointOnCircle = Offset(
-      radius * -sin(values.theta) + center.dx,
+      radius * sin(values.theta) + center.dx,
       radius * cos(values.theta) + center.dy,
     );
 
@@ -188,7 +188,8 @@ class Painter extends CustomPainter {
     final textSpan = TextSpan(
       text: "${values.theta.toStringAsFixed(3)}\n" +
           "${values.thetaDot.toStringAsFixed(3)}\n" +
-          "${values.thetaDdot.toStringAsFixed(3)}",
+          "${values.thetaDdot.toStringAsFixed(3)}\n" +
+          "${values.torque.toStringAsFixed(3)}",
       style: TextStyle(color: Colors.white, fontSize: 16),
     );
     final textPainter = TextPainter(
@@ -220,33 +221,43 @@ class Painter extends CustomPainter {
 
     Rect ddotRect = Rect.fromCircle(
       center: center,
+      radius: 0.8 * radius,
+    );
+    Rect dotRect = Rect.fromCircle(
+      center: center,
       radius: 0.9 * radius,
     );
-
-    // Rect torqueRect = Rect.fromCircle(
-    //   center: center,
-    //   radius: 0.8 * radius,
-    // );
+    Rect torqueRect = Rect.fromCircle(
+      center: center,
+      radius: 0.7 * radius,
+    );
 
     canvas.drawPath(linePath, linePaint);
 
     canvas.drawArc(
       ddotRect,
-      values.theta + rightAngle,
-      (values.thetaDot / 5),
+      rightAngle - values.theta,
+      -(values.thetaDdot / 500),
       false,
       ddotPaint,
     );
-
+    canvas.drawArc(
+      dotRect,
+      rightAngle - values.theta,
+      -(values.thetaDot / 5),
+      false,
+      ddotPaint,
+    );
+    canvas.drawArc(
+      torqueRect,
+      rightAngle - values.theta,
+      -(values.torque / 5),
+      false,
+      ddotPaint,
+    );
     // For showing the point moving on the circle
     canvas.drawCircle(pointOnCircle, 10, pointPaint);
-    // canvas.drawArc(
-    //   torqueRect,
-    //   values.theta + rightAngle,
-    //   (torque / 5),
-    //   false,
-    //   ddotPaint,
-    // );
+
     textPainter.paint(canvas, center + Offset(0, 10));
   }
 
