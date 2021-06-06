@@ -77,22 +77,17 @@ class Model {
   }
 
   double _setTheta(RawVals vals) {
-    double _theta = asin(vals.gY / vals.gMagnitude());
-    // double theta;
-    // if(vals.gX != 0.0){
-    //   // avoid div0 error
-    //   _theta = atan(vals.gY / vals.gX);
-    // } else {
-    //   _theta = vals.gY.sign * pi / 2;
-    // }
+    double _theta = -asin(vals.gY / vals.gMagnitude());
+
     if (vals.gX < 0) {
-      if (vals.gY < 0) {
-        _theta = -pi - _theta;
-        // _theta -= pi;
-      } else {
-        _theta = pi - _theta;
-        // _theta += pi;
-      }
+      _theta = pi - _theta;
+      // if (vals.gY < 0) {
+      //   // _theta -= pi;
+      //   _theta = pi - _theta;
+      // } else {
+      //   // _theta += pi;
+      //   _theta = -_theta + pi;
+      // }
     }
     return _theta - thetaOffset;
   }
@@ -129,8 +124,8 @@ class Model {
         if (_thetaDotSignChange() <= 0) {
           // at apex
           // needs vals.aX to be genuine
-          // axisOffset = asin(vals.aY / vals.aMagnitude());
-          // axosOffset = atan(-vals.aX / vals.aY); // Needs testing
+          axisOffset = asin(vals.aY / vals.aMagnitude());
+          // axisOffset = atan(-vals.aX / vals.aY); // Needs testing
           _cTMaxSum += cos(theta);
           _apexSamples++;
           _samples++;

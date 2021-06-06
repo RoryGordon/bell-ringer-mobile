@@ -16,36 +16,23 @@ class Controller {
     view.setModel(model);
   }
 
-  // Future<BluetoothCharacteristic> setupDeviceOld() async {
-  //   // this is almsot certainly not going to work
-  //   await device.discoverServices();
-  //   Stream<List<BluetoothService>> serviceStream = device.services;
-  //   await for (List<BluetoothService> services in serviceStream) {
-  //     for (BluetoothService service in services) {
-  //       var serviceId = service.uuid.toString().toUpperCase().substring(4, 8);
-  //       if (serviceId == "FFE0") {
-  //         for (BluetoothCharacteristic char in service.characteristics) {
-  //           this.characteristic = char;
-  //           _enableNotify();
-  //           //...
-  //           return characteristic;
-  //         }
-  //       }
-  //     }
-  //   }
-  //   return null;
-  // }
-
-  //TODO: Try making this Future<void>
+  // TODO: Move this to happen on the device selection button,
+  //       and only pass the characteristic to the controller.
+  //       This will let you get rid of that big blue button.
   Future<BluetoothCharacteristic> setupDevice() async {
-    // this is almsot certainly not going to work
+    // this is almost certainly not going to work
+    // wait for services to be visible
     await device.discoverServices();
+    // get the first services list from the stream, then do{}
     await device.services.first.then((services) {
       for (BluetoothService service in services) {
+        // get service id, check if it's FFE0
         var serviceId = service.uuid.toString().toUpperCase().substring(4, 8);
         if (serviceId == "FFE0") {
+          // get first (and only) characteristic
           for (BluetoothCharacteristic char in service.characteristics) {
             this.characteristic = char;
+            // enable notifications and return
             _enableNotify();
             return this.characteristic;
           }
@@ -56,11 +43,29 @@ class Controller {
 
   Stream<RawVals> readCharacteristic() async* {
     await for (List<int> value in characteristic.value) {
-      yield _fromIntList(value);
+      if (!value.isEmpty) {
+        // checksum
+        int listLength = value.length;
+        if (listLength != 15) {
+          print("Length: $listLength\n List: $value");
+        } else {
+          int checksum =
+              value.sublist(0, listLength - 1).fold(0, (p, c) => p + c) &
+                  0xFF; //sum list
+          if (checksum == value[listLength - 1]) {
+            yield _fromIntList(value);
+          } else {
+            print("CHECKSUM FAILED! $checksum : ${value[listLength - 1]}");
+          }
+        }
+      } else {
+        print("VALUE EMPTY!");
+      }
     }
   }
 
   Future<void> _enableNotify() async {
+    // only do if it won't cause an error
     if (!characteristic.isNotifying) {
       await characteristic.setNotifyValue(true);
     }
@@ -68,27 +73,39 @@ class Controller {
 
   RawVals _fromIntList(List<int> outputList) {
     //TODO: Update arduino to send x accel
-    if (outputList.length == 13) {
-      int acc = outputList[4] | outputList[5] << 8;
-      int gyr = outputList[6] | outputList[7] << 8;
-      List<int> imu = [
-        outputList[8] | outputList[9] << 8,
-        outputList[10] | outputList[11] << 8
-      ];
+    if (outputList.length == 15) {
+      // first 4 bytes are timestamp
+      //print(outputList.sublist(4));
+      int accX = outputList[4] | outputList[5] << 8;
+      int accY = outputList[6] | outputList[7] << 8;
+      int gyr = outputList[8] | outputList[9] << 8;
+      int imuX = outputList[10] | outputList[11] << 8;
+      int imuY = outputList[12] | outputList[13] << 8;
 
-      if (acc >= 0x8000) {
-        acc -= 0x10000;
+      // convert to signed
+      if (outputList[5] >> 7 == 1) {
+        // accX = ~accX;
+        accX -= 0x10000;
       }
-      if (gyr >= 0x8000) {
+      if (outputList[7] >> 7 == 1) {
+        // accY = ~accY;
+        accY -= 0x10000;
+      }
+      if (outputList[9] >> 7 == 1) {
+        print(gyr.toRadixString(16));
         gyr -= 0x10000;
+        // gyr = ~gyr;
       }
-      if (imu[0] >= 0x8000) {
-        imu[0] -= 0x10000;
+      if (outputList[11] >> 7 == 1) {
+        // imuX = ~imuX;
+        imuX -= 0x10000;
       }
-      if (imu[1] >= 0x8000) {
-        imu[1] -= 0x10000;
+      if (outputList[13] >> 7 == 1) {
+        // imuY = ~imuY;
+        imuY -= 0x10000;
       }
-      return RawVals(imu[0], imu[1], gyr, 0, acc);
+
+      return RawVals(imuX, imuY, gyr, accX, accY);
     } else {
       print("Incorrect length of outputList");
       return RawVals(0, 0, 0, 0, 0);

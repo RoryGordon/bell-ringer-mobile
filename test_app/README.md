@@ -1,16 +1,25 @@
-# test_app
+# Bell-ringing feedback app
 
-A new Flutter project.
+This application is designed to work with hardware connected to a full-circle bell's wheel.
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+Using Visual Studio Code as an IDE, pressing F5 will begin debugging - you will need to change permissions on your phone through settings to allow "developer mode". This app won't work on an emulator due to the use of BLE.
 
-A few resources to get you started if this is your first Flutter project:
+## Layout
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+The code itself can be found in the `lib` directory.
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Device selection is handled through the `FindDevicesScreen` and widgets found in `widgets.dart`. The main function of the app is split amongst the `Model`, `View` and `Controller` classes, each with their own respective files.
+
+### `Model`
+
+Handles the mathematical model. The `runStream()` method is what gets updated and returns the salient outputs.
+
+### `View`
+
+This class exclusively deals with drawing to the screen by returning objects extended from `CustomPainter`.
+
+### `Controller`
+
+Responsible for interfacing with the `BluetoothCharacteristic`, as well as the main event loop.

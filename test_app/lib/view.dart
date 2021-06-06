@@ -185,6 +185,21 @@ class Painter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
 
+    final textSpan = TextSpan(
+      text: "${values.theta.toStringAsFixed(3)}\n" +
+          "${values.thetaDot.toStringAsFixed(3)}\n" +
+          "${values.thetaDdot.toStringAsFixed(3)}",
+      style: TextStyle(color: Colors.white, fontSize: 16),
+    );
+    final textPainter = TextPainter(
+      text: textSpan,
+      textDirection: TextDirection.ltr,
+    );
+    textPainter.layout(
+      minWidth: 0,
+      maxWidth: 100,
+    );
+
     if (values.predHeight != null) {
       Path heightPath = Path()
         ..moveTo(
@@ -218,7 +233,7 @@ class Painter extends CustomPainter {
     canvas.drawArc(
       ddotRect,
       values.theta + rightAngle,
-      (values.thetaDdot / 5),
+      (values.thetaDot / 5),
       false,
       ddotPaint,
     );
@@ -232,6 +247,7 @@ class Painter extends CustomPainter {
     //   false,
     //   ddotPaint,
     // );
+    textPainter.paint(canvas, center + Offset(0, 10));
   }
 
   @override
