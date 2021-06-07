@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_blue/flutter_blue.dart';
 
-// import 'package:test_app/painters.dart';
-// import 'package:test_app/structures.dart';
-
 class ScanResultTile extends StatelessWidget {
   const ScanResultTile({Key key, this.result, this.onTap}) : super(key: key);
 
@@ -118,79 +115,3 @@ class ScanResultTile extends StatelessWidget {
     );
   }
 }
-
-// class PaintStream extends StatefulWidget {
-//   final BluetoothCharacteristic char;
-//   const PaintStream({Key key, this.char}) : super(key: key);
-
-//   @override
-//   _PaintStream createState() => _PaintStream();
-// }
-
-// class _PaintStream extends State<PaintStream> {
-//   var data = DataStruct();
-
-//   List<int> outputList = [-1];
-
-//   Future<void> _notifPressed() async {
-//     await widget.char.setNotifyValue(true);
-//     setState(() {});
-//   }
-
-//   Widget _streamBuilder(c, snapshot) {
-//     data.setVals(snapshot.data);
-//     return PaintWidget(data: data);
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     if (!widget.char.isNotifying) {
-//       return IconButton(
-//         icon: Icon(Icons.access_alarm),
-//         onPressed: () => _notifPressed(),
-//       );
-//     } else {
-//       return SafeArea(
-//         child: StreamBuilder<List<int>>(
-//           stream: widget.char.value,
-//           initialData: widget.char.lastValue,
-//           builder: (c, snapshot) => _streamBuilder(c, snapshot),
-//         ),
-//       );
-//     }
-//   }
-// }
-
-// class _PaintStreamTest extends State<PaintStream> {
-//   var data = DataStruct();
-
-//   List<int> outputList = [-1];
-
-//   Future<void> _notifPressed() async {
-//     await widget.char.setNotifyValue(true);
-//     setState(() {});
-//   }
-
-//   Widget _streamBuilder(c, snapshot) {
-//     data.setVals(snapshot.data);
-//     return PaintWidget(data: data);
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     if (!widget.char.isNotifying) {
-//       return IconButton(
-//         icon: Icon(Icons.access_alarm),
-//         onPressed: () => _notifPressed(),
-//       );
-//     } else {
-//       return SafeArea(
-//         child: StreamBuilder<List<int>>(
-//           stream: widget.char.value,
-//           initialData: widget.char.lastValue,
-//           builder: (c, snapshot) => _streamBuilder(c, snapshot),
-//         ),
-//       );
-//     }
-//   }
-// }

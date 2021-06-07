@@ -67,6 +67,7 @@ class Controller {
   Future<void> _enableNotify() async {
     // only do if it won't cause an error
     if (!characteristic.isNotifying) {
+      await Future.delayed(Duration(seconds: 1));
       await characteristic.setNotifyValue(true);
     }
   }
@@ -84,24 +85,18 @@ class Controller {
 
       // convert to signed
       if (outputList[5] >> 7 == 1) {
-        // accX = ~accX;
         accX -= 0x10000;
       }
       if (outputList[7] >> 7 == 1) {
-        // accY = ~accY;
         accY -= 0x10000;
       }
       if (outputList[9] >> 7 == 1) {
-        print(gyr.toRadixString(16));
         gyr -= 0x10000;
-        // gyr = ~gyr;
       }
       if (outputList[11] >> 7 == 1) {
-        // imuX = ~imuX;
         imuX -= 0x10000;
       }
       if (outputList[13] >> 7 == 1) {
-        // imuY = ~imuY;
         imuY -= 0x10000;
       }
 

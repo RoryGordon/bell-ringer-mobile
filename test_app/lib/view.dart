@@ -221,15 +221,15 @@ class Painter extends CustomPainter {
 
     Rect ddotRect = Rect.fromCircle(
       center: center,
-      radius: 0.8 * radius,
+      radius: 0.7 * radius,
     );
     Rect dotRect = Rect.fromCircle(
       center: center,
-      radius: 0.9 * radius,
+      radius: 0.85 * radius,
     );
     Rect torqueRect = Rect.fromCircle(
       center: center,
-      radius: 0.7 * radius,
+      radius: 0.55 * radius,
     );
 
     canvas.drawPath(linePath, linePaint);
@@ -237,7 +237,7 @@ class Painter extends CustomPainter {
     canvas.drawArc(
       ddotRect,
       rightAngle - values.theta,
-      -(values.thetaDdot / 500),
+      -(values.thetaDdot / 5),
       false,
       ddotPaint,
     );
@@ -251,7 +251,7 @@ class Painter extends CustomPainter {
     canvas.drawArc(
       torqueRect,
       rightAngle - values.theta,
-      -(values.torque / 5),
+      -(values.torque),
       false,
       ddotPaint,
     );

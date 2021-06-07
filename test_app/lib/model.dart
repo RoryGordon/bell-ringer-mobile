@@ -18,8 +18,10 @@ class Model {
   double thetaOffset = 0;
   double deviceRadius = 1; // 0 would break everything
   double bigC = 0;
+  double bigC2 = 0;
 
   bool isCalibrating = false;
+  bool offsetsFound = false;
   double _samples = 0;
   double _apexSamples = 0;
   double _baseSamples = 0;
@@ -38,7 +40,7 @@ class Model {
 
   double _torque() {
     if (bigC != null) {
-      return 0.5 * thetaDdot - sin(theta);
+      return sin(theta) - 2 * bigC * thetaDdot;
     } else {
       return 0;
     }
@@ -78,7 +80,7 @@ class Model {
     _samples = 0;
     bigC = null;
     while (_samples <= 10) {
-      await Future.delayed(Duration(seconds: 5));
+      await Future.delayed(Duration(seconds: 2));
     }
     isCalibrating = false;
     bigC = _bigC();
@@ -114,8 +116,9 @@ class Model {
 
       theta = _setTheta(vals);
       thetaDot = vals.vXY;
-      thetaDdot = (-vals.aX * sin(axisOffset) + vals.aY * cos(axisOffset)) /
+      thetaDdot = -(-vals.aX * sin(axisOffset) + vals.aY * cos(axisOffset)) /
           deviceRadius;
+      // thetaDdot = vals.aY / deviceRadius;
       if (bigC != null) {
         predHeight = cos(theta) - bigC * vals.vXYSq(); // 1 is low, -1 high
       } else {
@@ -123,26 +126,60 @@ class Model {
       }
       torque = _torque();
       if (isCalibrating) {
-        //TODO: Calibrate bigC
         if (_thetaDotSignChange() <= 0) {
           // at apex
-          axisOffset = asin(vals.aY / vals.aMagnitude());
-          if (vals.aX < 0) {
-            axisOffset = pi - axisOffset;
-          }
-          _cTMaxSum += cos(theta);
-          _apexSamples++;
-          _samples++;
+          //bigC2 = sin(theta) / thetaDdot;
+          // axisOffset = acos(vals.aY / vals.aMagnitude());
+          axisOffset = asin(vals.aX / vals.aMagnitude());
+          // if (vals.aX < 0) {
+          //   axisOffset = -axisOffset;
+          //   if (vals.aY < 0) {
+          //     axisOffset += pi;
+          //   }
+          // } else if (vals.aY < 0) {
+          //   axisOffset -= pi;
+          // }
+          // if (vals.aY < 0) {
+          //   axisOffset = pi - axisOffset;
+          // }
+          offsetsFound = true;
+          //_cTMaxSum += cos(theta);
+          //_apexSamples++;
+          //_samples++;
           // bigC = _bigC();
-        } else if (_thetaSignChange() <= 0) {
+          // } else if (_thetaSignChange() <= 0) {
           // at base
-          deviceRadius =
-              -(vals.aX * cos(axisOffset) + vals.aY * sin(axisOffset)) /
-                  (vals.vXYSq());
-          _tDSqMaxSum += vals.vXYSq();
-          _baseSamples++;
-          _samples++;
+          // deviceRadius =
+          //     (vals.aX * cos(axisOffset) + vals.aY * sin(axisOffset)) /
+          //         (vals.vXYSq());
+          //_tDSqMaxSum += vals.vXYSq();
+          //_baseSamples++;
+          // _samples++;
           // bigC = _bigC();
+        }
+        print("AX Offset: $axisOffset, r_d: $deviceRadius");
+        if (offsetsFound) {
+          if (_thetaDotSignChange() <= 0) {
+            // at apex
+            bigC2 = sin(theta) / thetaDdot;
+            // axisOffset = acos(vals.aY / vals.aMagnitude());
+            // if (vals.aX * vals.aY > 0) {
+            //   axisOffset = -axisOffset;
+            // }
+            _cTMaxSum += cos(theta);
+            _apexSamples++;
+            _samples++;
+            // bigC = _bigC();
+          } else if (_thetaSignChange() <= 0) {
+            // at base
+            deviceRadius = -thetaDot.sign *
+                (vals.aX * cos(axisOffset) + vals.aY * sin(axisOffset)) /
+                (vals.vXYSq());
+            _tDSqMaxSum += vals.vXYSq();
+            _baseSamples++;
+            _samples++;
+            // bigC = _bigC();
+          }
         }
       }
       yield MeasuredVals(theta, thetaDot, thetaDdot, predHeight, torque);
